@@ -1,0 +1,10 @@
+{
+  "name": "Arch Dashboard",
+  "version": "0.1.0",
+  "title": "Gateway Server API Doc",
+  "url": "https://gateway",
+  "sampleUrl": "http://localhost:8000",
+  "template": {
+    "forceLanguage": "en"
+  }
+}

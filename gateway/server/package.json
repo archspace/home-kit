@@ -1,0 +1,22 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "apidoc": "apidoc -i controllers/ -o apidoc/",
+    "precommit": "srcDir=gateway/server/ gitPath=../../ node precommit.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "total.js": "^2.9.4"
+  },
+  "devDependencies": {
+    "apidoc": "^0.17.6",
+    "eslint": "^4.16.0",
+    "husky": "^0.14.3"
+  }
+}
