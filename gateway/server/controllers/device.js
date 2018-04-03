@@ -1,8 +1,7 @@
 const F = global.framework
+const noble = require('noble')
 exports.install = function () {
-  F.route('/device/search', startSearch, ['post'])
-  F.route('/device/search', searchList, ['json'])
-  F.route('/device', addDevice, ['post', 'json'])
+  F.websocket('device', deviceService, ['json'])
 }
 
 /**
@@ -34,66 +33,84 @@ exports.install = function () {
  * */
 
 /**
- * @api {post} /device/search Search Start
- * @apiDescription Start searching device
+ * @api {websocket} /device ScanDevice
  * @apiGroup Device
- * @apiUse ExecError
- * @apiUse ResultOK
- *
- * */
-
-function startSearch () {
-
-}
-
-/**
- * @api {get} /device/search Search List
- * @apiDescription Available device list
- * @apiGroup Device
- * @apiName SearchList
- * @apiUse ExecError
- * @apiSuccessExample {json} Success-Response:
- * HTTP/1.1 200 OK
+ * @apiParamExample {json} StartScan:
  * {
- *    "result": "OK",
- *    "data": [
- *      {
- *         "UUID": "1af33456...",
- *         "name": "meter"
+ *    cmd: "start-scan",
+ *    params: {
+ *      uuids: [
+ *        "uuid string .....",
+ *        "uuid string ....."
+ *      ]
+ *    }
+ * }
+ *
+ * @apiParamExample {json} StopScan:
+ * {
+ *    cmd: "stop-scan"
+ * }
+ *
+ * @apiSuccessExample {json} discover:
+ * {
+ *    event: "discover",
+ *    data: {
+ *      id: "<id>",
+ *      address: "<BT address">, // Bluetooth Address of device, or 'unknown' if not known
+ *      addressType: "<BT address type>", // Bluetooth Address type (public, random), or 'unknown' if not known
+ *      connectable: <connectable>, // true or false, or undefined if not known
+ *      advertisement: {
+ *        localName: "<name>",
+ *        txPowerLevel: <int>,
+ *        serviceUuids: ["<service UUID>", ...],
+ *        serviceSolicitationUuid: ["<service solicitation UUID>", ...],
+ *        manufacturerData: <Buffer>,
+ *        serviceData: [
+ *          {
+ *            uuid: "<service UUID>"
+ *            data: <Buffer>
+ *          },
+ *          ...
+ *        ]
  *      },
- *      {
- *          "UUID": "108dc3456...",
- *          "name": "relay"
- *      }
- *    ]
+ *      rssi: <rssi>
+ *    }
  * }
- * */
-
-function searchList () {
-
-}
-
-/**
- * @api {post} /device Add device
- * @apiDescription Add device from list, please see {GET} /device/search
- * @apiGroup Device
- * @apiParam {String} UUID the target device UUID
- * @apiParam {String} alias the device alias display in list
- * @apiParam {String} area where is the device
- * @apiParam {String} type device type
- * @apiParamExample {json} Example
- * {
- *    "UUID": "108dc3456...",
- *    "alias": "溫濕度計-1",
- *    "area": "臥室",
- *    "type": "device type"
- * }
- * @apiUse ResultOK
- * @apiUse ExecError
- * @apiUse ParamError
  *
  * */
 
-function addDevice () {
+function deviceService () {
+  const ctrl = this
+  ctrl.on('message', (client, msg) => {
+    const cmd = msg && msg.cmd
+    const uuids = msg.params && msg.params.uuids
+    switch (cmd) {
+    case 'start-scan':
+      noble.startScanning(uuids, false)
+      break
+    case 'stop-scan':
+      noble.stopScanning()
+      break
+    default:
+      console.error('unknown cmd ' + cmd)
+      break
+    }
+  })
 
+  noble.on('discover', (p) => {
+    const data = {
+      event: 'discover',
+      data: {
+        id: p.id,
+        address: p.address,
+        addressType: p.addressType,
+        connectable: p.connectable,
+        advertisement: p.advertisement,
+        rssi: p.rssi
+      }
+    }
+    ctrl.send(data)
+  })
 }
+
+
