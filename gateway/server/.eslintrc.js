@@ -25,6 +25,7 @@ module.exports = {
         ],
         "no-await-in-loop": "error",
         "for-direction": "error",
-        "block-scoped-var": "error"
+        "block-scoped-var": "error",
+        "no-console": "warn"
     }
 };
