@@ -12,6 +12,9 @@ TEST('device', () => {
 
     client.on('message', (msg) => {
       console.log(msg)
+      /*
+       * TODO: transfer devices list to phone
+       */
     })
   })
 })
